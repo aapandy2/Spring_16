@@ -81,55 +81,55 @@ print 'MJ_I', '(<j_nu()>-j_nu(<>))/<j_nu()> = ', (MJ_I_exact_avg
                                                   - MJ_I_avgs)/MJ_I_exact_avg
 
 
-#-------------------------------MJ_Q-------------------------------------------#
-x = 0
-y = 0
-MJ_Q_exact_avg = 0
-MJ_Q_exact = [[0 for i in range(1152)] for j in range(1152)]
-
-for x in range(0, 1151):
-  for y in range(0, 1151):
-    MJ_Q_exact[x][y] = sp.j_nu_fit_py(nuratio, B_mag[x][y], n_e[x][y],
-                                      obs_angle[x][y], sp.MAXWELL_JUETTNER,
-                                      sp.STOKES_Q, theta_e, power_law_p,
-                                      gamma_min, gamma_max, gamma_cutoff,
-                                      kappa, kappa_width)
-    MJ_Q_exact_avg = MJ_Q_exact_avg + MJ_Q_exact[x][y]
-
-MJ_Q_exact_avg = MJ_Q_exact_avg/(1152*1152)
-
-MJ_Q_avgs  = sp.j_nu_fit_py(nuratio, B_mag_avg, n_e_avg,
-                            obs_angle_avg, sp.MAXWELL_JUETTNER,
-                            sp.STOKES_Q, theta_e, power_law_p,
-                            gamma_min, gamma_max, gamma_cutoff,
-                            kappa, kappa_width)
-
-print 'MJ_Q', '(<j_nu()>-j_nu(<>))/<j_nu()> = ', (MJ_Q_exact_avg
-                                                  - MJ_Q_avgs)/MJ_Q_exact_avg
-
-
-#-------------------------------MJ_V-------------------------------------------#
-x = 0
-y = 0
-MJ_V_exact_avg = 0
-MJ_V_exact = [[0 for i in range(1152)] for j in range(1152)]
-
-for x in range(0, 1151):
-  for y in range(0, 1151):
-    MJ_V_exact[x][y] = sp.j_nu_fit_py(nuratio, B_mag[x][y], n_e[x][y],
-                                      obs_angle[x][y], sp.MAXWELL_JUETTNER,
-                                      sp.STOKES_V, theta_e, power_law_p,
-                                      gamma_min, gamma_max, gamma_cutoff,
-                                      kappa, kappa_width)
-    MJ_V_exact_avg = MJ_V_exact_avg + MJ_V_exact[x][y]
-
-MJ_V_exact_avg = MJ_V_exact_avg/(1152*1152)
-
-MJ_V_avgs  = sp.j_nu_fit_py(nuratio, B_mag_avg, n_e_avg,
-                            obs_angle_avg, sp.MAXWELL_JUETTNER,
-                            sp.STOKES_V, theta_e, power_law_p,
-                            gamma_min, gamma_max, gamma_cutoff,
-                            kappa, kappa_width)
-
-print 'MJ_V', '(<j_nu()>-j_nu(<>))/<j_nu()> = ', (MJ_V_exact_avg
-                                                  - MJ_V_avgs)/MJ_V_exact_avg
+##-------------------------------MJ_Q-------------------------------------------#
+#x = 0
+#y = 0
+#MJ_Q_exact_avg = 0
+#MJ_Q_exact = [[0 for i in range(1152)] for j in range(1152)]
+#
+#for x in range(0, 1151):
+#  for y in range(0, 1151):
+#    MJ_Q_exact[x][y] = sp.j_nu_fit_py(nuratio, B_mag[x][y], n_e[x][y],
+#                                      obs_angle[x][y], sp.MAXWELL_JUETTNER,
+#                                      sp.STOKES_Q, theta_e, power_law_p,
+#                                      gamma_min, gamma_max, gamma_cutoff,
+#                                      kappa, kappa_width)
+#    MJ_Q_exact_avg = MJ_Q_exact_avg + MJ_Q_exact[x][y]
+#
+#MJ_Q_exact_avg = MJ_Q_exact_avg/(1152*1152)
+#
+#MJ_Q_avgs  = sp.j_nu_fit_py(nuratio, B_mag_avg, n_e_avg,
+#                            obs_angle_avg, sp.MAXWELL_JUETTNER,
+#                            sp.STOKES_Q, theta_e, power_law_p,
+#                            gamma_min, gamma_max, gamma_cutoff,
+#                            kappa, kappa_width)
+#
+#print 'MJ_Q', '(<j_nu()>-j_nu(<>))/<j_nu()> = ', (MJ_Q_exact_avg
+#                                                  - MJ_Q_avgs)/MJ_Q_exact_avg
+#
+#
+##-------------------------------MJ_V-------------------------------------------#
+#x = 0
+#y = 0
+#MJ_V_exact_avg = 0
+#MJ_V_exact = [[0 for i in range(1152)] for j in range(1152)]
+#
+#for x in range(0, 1151):
+#  for y in range(0, 1151):
+#    MJ_V_exact[x][y] = sp.j_nu_fit_py(nuratio, B_mag[x][y], n_e[x][y],
+#                                      obs_angle[x][y], sp.MAXWELL_JUETTNER,
+#                                      sp.STOKES_V, theta_e, power_law_p,
+#                                      gamma_min, gamma_max, gamma_cutoff,
+#                                      kappa, kappa_width)
+#    MJ_V_exact_avg = MJ_V_exact_avg + MJ_V_exact[x][y]
+#
+#MJ_V_exact_avg = MJ_V_exact_avg/(1152*1152)
+#
+#MJ_V_avgs  = sp.j_nu_fit_py(nuratio, B_mag_avg, n_e_avg,
+#                            obs_angle_avg, sp.MAXWELL_JUETTNER,
+#                            sp.STOKES_V, theta_e, power_law_p,
+#                            gamma_min, gamma_max, gamma_cutoff,
+#                            kappa, kappa_width)
+#
+#print 'MJ_V', '(<j_nu()>-j_nu(<>))/<j_nu()> = ', (MJ_V_exact_avg
+#                                                  - MJ_V_avgs)/MJ_V_exact_avg
