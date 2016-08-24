@@ -253,12 +253,19 @@ def a_integrator(p_bar, nu):
         i = i + 1.
                            
         contrib = between_poles[0] + poles[0]
+       
         
+        if(np.isfinite(contrib) == False):
+            contrib = 0.
+
+ 
         ans = ans + contrib
        
         if(np.abs(contrib/ans) < tolerance):
             contrib_small_counter = contrib_small_counter + 1
 
+    if(np.isfinite(initial_contribution) == False):
+        initial_contribution = 0.
  
     return ans + initial_contribution
 
@@ -291,8 +298,8 @@ def final_ans(nu):
 print '--------------------OUTPUT--------------------'
 print 'nu/nu_c	nu/nu_c_dexter	ans'
 
-#nu_list = [0.01, 0.1, 1., 5.]
-nu_list = np.logspace(-2, 1., 50)
+nu_list = [30., 40., 50.]
+#nu_list = np.logspace(-2, 1., 50)
 
 for i in nu_list:
     print i, i*nu_c/nu_c_dexter, final_ans(i * nu_c)
