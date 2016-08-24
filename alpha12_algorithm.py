@@ -46,13 +46,14 @@ B       = 30.
 nu_c    = (e * B) / (2. * np.pi * m * c)
 omega_c = 2. * np.pi * nu_c
 
-nu    = 5.96362331659 * nu_c
-omega = 2. * np.pi * nu
+#nu    = 0.01 * nu_c
+#omega = 2. * np.pi * nu
 
 nu_c_dexter = (3./2.) * theta_e**2. * nu_c * np.sin(theta)
 
 #This is the term Df, equation 29 of alpha_12_calculation_outline
-def Df(gamma):
+def Df(gamma, nu):
+    omega = 2. * np.pi * nu
     term1 = omega / (m * c**2. * theta_e)
     term2 = 1./ (4. * np.pi * m**3. * c**3. * theta_e * special.kn(2, 1./theta_e))
     ans   = term1 * term2 * np.exp(- gamma / theta_e)
@@ -83,6 +84,8 @@ def integrand_nopoles(a, p_bar, nu):
     #Omega, equation 8
     Omega = omega_c / gamma
     
+    omega = 2. * np.pi * nu
+
     #z, equation 5
     z = omega * np.sin(theta) * p_perp / (gamma * m * c * Omega) 
     
@@ -108,7 +111,7 @@ def integrand_nopoles(a, p_bar, nu):
     #d^3p from equation 26
     d3p = 2. * np.pi * p_perp * dp_perp_dp_para
     
-    ans = M * N / Omega * Df(gamma) * bessel_term * d3p
+    ans = M * N / Omega * Df(gamma, nu) * bessel_term * d3p
     
     return ans
 
@@ -136,6 +139,8 @@ def integrand_other_term(a, p_bar, nu):
     #Omega, equation 8
     Omega = omega_c / gamma
     
+    omega = 2. * np.pi * nu
+
     #z, equation 5
     z = omega * np.sin(theta) * p_perp / (gamma * m * c * Omega) 
 
@@ -147,13 +152,13 @@ def integrand_other_term(a, p_bar, nu):
  
     jacobian = - m**3. * c**3. * (nu_c / nu) * gamma**2. / (p_perp * (1. - np.cos(theta) * p_bar))
     
-    #dp_perp * dp_0.00740740740741parallel from equation 
+    #dp_perp * dp_parallel from equation 
     dp_perp_dp_para = jacobian #*dadp_bar, which is notation we don't use for a numerical integral
     
     #d^3p from equation 26
     d3p = 2. * np.pi * p_perp * dp_perp_dp_para
     
-    ans = M * N / Omega * Df(gamma) * (1./z) * d3p
+    ans = M * N / Omega * Df(gamma, nu) * (1./z) * d3p
     
     return ans
 
@@ -198,14 +203,21 @@ def a_integrator(p_bar, nu):
     # contribution to the integral divided by the total answer 
     # is smaller than tolerance
     tolerance = 1e-5
+
+
+    contrib_small_counter = 0
+    contrib_counter_max   = 20
+
     
     #CASE 1: a_min < start - 2 * width; we have to integrate a region without
     #        poles from a_min to start - 2 * width and then integrate the pole
     #        -containing region from start - 2 * width to start + 2 * width.
     if(a_min(p_bar, nu) < start - 2. * width):
-        initial_nopoles = quad(lambda a: integrand_poles(a, p_bar, nu), a_min(p_bar, nu), start - 2. * width)
+        initial_nopoles = quad(lambda a: integrand_poles(a, p_bar, nu), a_min(p_bar, nu), 
+                               start - 2. * width, full_output=1)
         initial_poles   = quad(lambda a: integrand_nopoles(a, p_bar, nu)/np.pi * approx_sign(a), 
-                               start - 2. * width, start, weight='cauchy', wvar=np.round(start))
+                               start - 2. * width, start, weight='cauchy', 
+                               wvar=np.round(start), full_output=1)
         initial_contribution = initial_nopoles[0] + initial_poles[0]
            
         #CASE 1a: if both initial_poles and initial_nopoles are 0, ans = their sum
@@ -220,7 +232,8 @@ def a_integrator(p_bar, nu):
     #        first from a_min to start.
     if(a_min(p_bar, nu) > start - 2. * width):
         initial_poles = quad(lambda a: integrand_nopoles(a, p_bar, nu)/np.pi * approx_sign(a), 
-                             a_min(p_bar, nu), start, weight='cauchy', wvar=np.round(a_min(p_bar, nu)))
+                             a_min(p_bar, nu), start, weight='cauchy', 
+                             wvar=np.round(a_min(p_bar, nu)), full_output=1)
         
         #CASE 2a: if initial_poles is 0, ans = initial_poles = 0 and the while loop below
         #         throws a divide-by-zero error.  Set ans to a negligible nonzero value
@@ -230,22 +243,30 @@ def a_integrator(p_bar, nu):
                 
         initial_contribution = initial_poles[0]
             
-    while(i == 0 or np.abs(contrib/ans) > tolerance):  
-        between_poles = quad(lambda a: integrand_poles(a, p_bar, nu), start + i, end + i)
+#    while(i == 0 or np.abs(contrib/ans) > tolerance):  
+    while(i == 0 or contrib_small_counter < contrib_counter_max):
+        between_poles = quad(lambda a: integrand_poles(a, p_bar, nu), start + i, end + i,
+                             full_output=1)
         poles         = quad(lambda a: integrand_nopoles(a, p_bar, nu)/np.pi * approx_sign(a), 
-                             end + i, end + 2. * width + i, weight='cauchy', wvar=np.round(end + width + i))
+                             end + i, end + 2. * width + i, weight='cauchy', 
+                             wvar=np.round(end + width + i), full_output=1)
         i = i + 1.
                            
         contrib = between_poles[0] + poles[0]
         
         ans = ans + contrib
-        
+       
+        if(np.abs(contrib/ans) < tolerance):
+            contrib_small_counter = contrib_small_counter + 1
+
+ 
     return ans + initial_contribution
 
 # a integral for 1/z term integrand
 def other_term_a_integrator(p_bar, nu):
        
-    integral_ans = quad(lambda a: integrand_other_term(a, p_bar, nu), a_min(p_bar, nu), np.inf)
+    integral_ans = quad(lambda a: integrand_other_term(a, p_bar, nu), 
+                        a_min(p_bar, nu), np.inf, full_output=1)
     
     return integral_ans[0]
 
@@ -269,4 +290,9 @@ def final_ans(nu):
 
 print '--------------------OUTPUT--------------------'
 print 'nu/nu_c	nu/nu_c_dexter	ans'
-print nu/nu_c, nu/nu_c_dexter, final_ans(nu)
+
+#nu_list = [0.01, 0.1, 1., 5.]
+nu_list = np.logspace(-2, 1., 50)
+
+for i in nu_list:
+    print i, i*nu_c/nu_c_dexter, final_ans(i * nu_c)
