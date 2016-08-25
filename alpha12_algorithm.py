@@ -4,40 +4,13 @@ import scipy.special as special
 from scipy.integrate import quad
 from scipy.integrate import fixed_quad
 
-# Set plot parameters to make beautiful plots
-pl.rcParams['figure.figsize']  = 12, 7.5
-pl.rcParams['lines.linewidth'] = 1.5
-pl.rcParams['font.family']     = 'serif'
-pl.rcParams['font.weight']     = 'bold'
-pl.rcParams['font.size']       = 15
-pl.rcParams['font.sans-serif'] = 'serif'
-pl.rcParams['text.usetex']     = True
-pl.rcParams['axes.linewidth']  = 1.5
-pl.rcParams['axes.titlesize']  = 'medium'
-pl.rcParams['axes.labelsize']  = 'medium'
-
-pl.rcParams['xtick.major.size'] = 8
-pl.rcParams['xtick.minor.size'] = 4
-pl.rcParams['xtick.major.pad']  = 8
-pl.rcParams['xtick.minor.pad']  = 8
-pl.rcParams['xtick.color']      = 'k'
-pl.rcParams['xtick.labelsize']  = 'medium'
-pl.rcParams['xtick.direction']  = 'in'
-
-pl.rcParams['ytick.major.size'] = 8
-pl.rcParams['ytick.minor.size'] = 4
-pl.rcParams['ytick.major.pad']  = 8
-pl.rcParams['ytick.minor.pad']  = 8
-pl.rcParams['ytick.color']      = 'k'
-pl.rcParams['ytick.labelsize']  = 'medium'
-pl.rcParams['ytick.direction']  = 'in'
-
-#Constants; copy-pasted from symphony
+#-------------Constants; copy-pasted from symphony----------------------------#
 m = 9.1093826e-28
 h = 6.6260693e-27
 c = 2.99792458e10
 e = 4.80320680e-10
 
+#-------------parameters------------------------------------------------------#
 n_e     = 1.
 theta_e = 3.
 theta   = np.pi/4.
@@ -46,10 +19,9 @@ B       = 30.
 nu_c    = (e * B) / (2. * np.pi * m * c)
 omega_c = 2. * np.pi * nu_c
 
-#nu    = 0.01 * nu_c
-#omega = 2. * np.pi * nu
-
 nu_c_dexter = (3./2.) * theta_e**2. * nu_c * np.sin(theta)
+
+#-------------------------------functions-------------------------------------#
 
 #This is the term Df, equation 29 of alpha_12_calculation_outline
 def Df(gamma, nu):
@@ -96,12 +68,13 @@ def integrand_nopoles(a, p_bar, nu):
     N = p_perp / (gamma * m * c)
 
     #bessel function term in integrand (eq. 16); note that the 1/sin(pi * a) is taken out
-    # so that we can use the Weiss method
+    # so that we can use the CPV integration method
     bessel_term = np.pi * special.jv(a, z) * special.jvp(-a, z)
-    
+   
+    #jv'(-a, z) blows up with a, and jv(a, z) goes to zero; 
+    #they limit to -1/(pi*z) * sin(pi*a) as a -> inf 
     if(np.isnan(bessel_term) == True):
         bessel_term = - 1./z * np.sin(np.pi * a)
-#        return 0.
       
     jacobian = - m**3. * c**3. * (nu_c / nu) * gamma**2. / (p_perp * (1. - np.cos(theta) * p_bar))
     
@@ -204,7 +177,8 @@ def a_integrator(p_bar, nu):
     # is smaller than tolerance
     tolerance = 1e-5
 
-
+    #integrator should quit after contrib_counter_max number of
+    #integral contributions less than tolerance
     contrib_small_counter = 0
     contrib_counter_max   = 20
 
@@ -243,7 +217,6 @@ def a_integrator(p_bar, nu):
                 
         initial_contribution = initial_poles[0]
             
-#    while(i == 0 or np.abs(contrib/ans) > tolerance):  
     while(i == 0 or contrib_small_counter < contrib_counter_max):
         between_poles = quad(lambda a: integrand_poles(a, p_bar, nu), start + i, end + i,
                              full_output=1)
@@ -290,16 +263,13 @@ def final_ans(nu):
                                              -1., 1., n=order)
     final_answer  = answer_bessel[0] + answer_invz[0]
 
-#    print 'Bessel func. term:          ', prefactor * answer_bessel[0]
-#    print '1/z term:                   ', prefactor * answer_invz[0]
-#    print 'alpha_12 final answer:      ', prefactor * final_answer
     return final_answer
 
 print '--------------------OUTPUT--------------------'
 print 'nu/nu_c	nu/nu_c_dexter	ans'
 
-nu_list = [30., 40., 50.]
-#nu_list = np.logspace(-2, 1., 50)
+nu_list = [0.01]
+#nu_list = np.logspace(0., 2., 25)
 
 for i in nu_list:
     print i, i*nu_c/nu_c_dexter, final_ans(i * nu_c)
